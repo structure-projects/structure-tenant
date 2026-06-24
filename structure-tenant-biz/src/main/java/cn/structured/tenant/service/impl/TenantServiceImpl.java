@@ -75,16 +75,11 @@ public class TenantServiceImpl implements ITenantService {
     public void update(Long id, TenantDTO dto) {
         log.info("开始更新租户，租户ID: {}, 新租户名称: {}", id, dto.getName());
         
-        Tenant tenant = tenantManager.getById(id);
-        if (tenant == null) {
-            log.warn("租户不存在，租户ID: {}", id);
-            throw new TenantException(TenantExceptionEnum.TENANT_NOT_FOUND);
-        }
-        if (dto.getCode() != null && !dto.getCode().equals(tenant.getCode()) && tenantManager.existsByCode(dto.getCode())) {
+        if (dto.getCode() != null && tenantManager.existsByCode(dto.getCode())) {
             log.warn("租户编码重复，编码: {}", dto.getCode());
             throw new TenantException(TenantExceptionEnum.TENANT_CODE_DUPLICATE);
         }
-        if (!dto.getName().equals(tenant.getName()) && tenantManager.existsByName(dto.getName())) {
+        if (tenantManager.existsByName(dto.getName())) {
             log.warn("租户名称重复，名称: {}", dto.getName());
             throw new TenantException(TenantExceptionEnum.TENANT_NAME_DUPLICATE);
         }
@@ -100,16 +95,10 @@ public class TenantServiceImpl implements ITenantService {
     @Transactional
     public void delete(Long id) {
         log.info("开始删除租户，租户ID: {}", id);
-        
-        Tenant tenant = tenantManager.getById(id);
-        if (tenant == null) {
-            log.warn("租户不存在，租户ID: {}", id);
-            throw new TenantException(TenantExceptionEnum.TENANT_NOT_FOUND);
-        }
-        
+
         tenantManager.removeById(id);
         
-        log.info("租户删除成功，租户ID: {}, 租户名称: {}", id, tenant.getName());
+        log.info("租户删除成功，租户ID: {}", id);
     }
 
     @Override
@@ -144,7 +133,7 @@ public class TenantServiceImpl implements ITenantService {
     @Override
     public ResPage<TenantVO> page(TenantQuery query, ReqPage reqPage) {
         log.info("分页查询租户列表，页码: {}, 每页大小: {}, 查询条件: {}", 
-                reqPage.getCurrentPage(), reqPage.getPageSize(), query);
+                reqPage.getPage(), reqPage.getSize(), query);
         
         LambdaQueryWrapper<Tenant> queryWrapper = Wrappers.<Tenant>lambdaQuery()
                 .like(null != query.getName(), Tenant::getName, query.getName())
@@ -157,7 +146,7 @@ public class TenantServiceImpl implements ITenantService {
                 .le(null != query.getCreateTimeEnd(), Tenant::getCreateTime, query.getCreateTimeEnd())
                 .orderByDesc(Tenant::getCreateTime);
         
-        IPage<Tenant> page = tenantManager.page(new Page<>(reqPage.getCurrentPage(), reqPage.getPageSize()), queryWrapper);
+        IPage<Tenant> page = tenantManager.page(new Page<>(reqPage.getPage(), reqPage.getSize()), queryWrapper);
         ResPage<TenantVO> result = ResPageConvert.convert(page, TenantAssembler::assembler);
         
         log.debug("分页查询租户列表成功，总记录数: {}, 当前页记录数: {}", result.getTotal(), result.getSize());

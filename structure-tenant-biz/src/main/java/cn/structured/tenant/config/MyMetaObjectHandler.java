@@ -13,7 +13,7 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
     public void insertFill(MetaObject metaObject) {
         strictInsertFill(metaObject, "createTime", LocalDateTime::now, LocalDateTime.class);
         strictInsertFill(metaObject, "updateTime", LocalDateTime::now, LocalDateTime.class);
-        strictInsertFill(metaObject, "isDeleted", () -> false, Boolean.class);
+        strictInsertFill(metaObject, "deleted", () -> false, Boolean.class);
     }
 
     @Override

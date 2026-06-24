@@ -69,16 +69,11 @@ public class TenantTemplateServiceImpl implements ITenantTemplateService {
     public void update(Long id, TenantTemplateDTO dto) {
         log.info("开始更新租户模板，模板ID: {}, 新模板名称: {}", id, dto.getName());
         
-        TenantTemplate tenantTemplate = tenantTemplateManager.getById(id);
-        if (tenantTemplate == null) {
-            log.warn("租户模板不存在，模板ID: {}", id);
-            throw new TenantException(TenantExceptionEnum.TENANT_TEMPLATE_NOT_FOUND);
-        }
-        if (dto.getCode() != null && !dto.getCode().equals(tenantTemplate.getCode()) && tenantTemplateManager.existsByCode(dto.getCode())) {
+        if (dto.getCode() != null && tenantTemplateManager.existsByCode(dto.getCode())) {
             log.warn("租户模板编码重复，编码: {}", dto.getCode());
             throw new TenantException(TenantExceptionEnum.TENANT_TEMPLATE_CODE_DUPLICATE);
         }
-        if (!dto.getName().equals(tenantTemplate.getName()) && tenantTemplateManager.existsByName(dto.getName())) {
+        if (tenantTemplateManager.existsByName(dto.getName())) {
             log.warn("租户模板名称重复，名称: {}", dto.getName());
             throw new TenantException(TenantExceptionEnum.TENANT_TEMPLATE_ALREADY_EXISTS);
         }
@@ -105,15 +100,9 @@ public class TenantTemplateServiceImpl implements ITenantTemplateService {
     public void delete(Long id) {
         log.info("开始删除租户模板，模板ID: {}", id);
         
-        TenantTemplate tenantTemplate = tenantTemplateManager.getById(id);
-        if (tenantTemplate == null) {
-            log.warn("租户模板不存在，模板ID: {}", id);
-            throw new TenantException(TenantExceptionEnum.TENANT_TEMPLATE_NOT_FOUND);
-        }
-        
         tenantTemplateManager.removeById(id);
         
-        log.info("租户模板删除成功，模板ID: {}, 模板名称: {}", id, tenantTemplate.getName());
+        log.info("租户模板删除成功，模板ID: {}", id);
     }
 
     @Override
@@ -134,7 +123,7 @@ public class TenantTemplateServiceImpl implements ITenantTemplateService {
     @Override
     public ResPage<TenantTemplateVO> page(TenantTemplateQuery query, ReqPage reqPage) {
         log.info("分页查询租户模板列表，页码: {}, 每页大小: {}, 查询条件: {}", 
-                reqPage.getCurrentPage(), reqPage.getPageSize(), query);
+                reqPage.getPage(), reqPage.getSize(), query);
         
         LambdaQueryWrapper<TenantTemplate> queryWrapper = Wrappers.<TenantTemplate>lambdaQuery()
                 .like(null != query.getName(), TenantTemplate::getName, query.getName())
@@ -145,7 +134,7 @@ public class TenantTemplateServiceImpl implements ITenantTemplateService {
                 .le(null != query.getCreateTimeEnd(), TenantTemplate::getCreateTime, query.getCreateTimeEnd())
                 .orderByAsc(TenantTemplate::getSort);
         
-        IPage<TenantTemplate> page = tenantTemplateManager.page(new Page<>(reqPage.getCurrentPage(), reqPage.getPageSize()), queryWrapper);
+        IPage<TenantTemplate> page = tenantTemplateManager.page(new Page<>(reqPage.getPage(), reqPage.getSize()), queryWrapper);
         ResPage<TenantTemplateVO> result = ResPageConvert.convert(page, TenantTemplateAssembler::assembler);
         
         log.debug("分页查询租户模板列表成功，总记录数: {}, 当前页记录数: {}", result.getTotal(), result.getSize());

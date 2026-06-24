@@ -59,17 +59,11 @@ public class TenantPackageServiceImpl implements ITenantPackageService {
     public void update(Long id, TenantPackageDTO dto) {
         log.info("开始更新租户套餐，套餐ID: {}, 新套餐名称: {}", id, dto.getName());
         
-        TenantPackage tenantPackage = tenantPackageManager.getById(id);
-        if (tenantPackage == null) {
-            log.warn("租户套餐不存在，套餐ID: {}", id);
-            throw new TenantException(TenantExceptionEnum.TENANT_PACKAGE_NOT_FOUND);
-        }
-        
-        if (dto.getCode() != null && !dto.getCode().equals(tenantPackage.getCode()) && tenantPackageManager.existsByCode(dto.getCode())) {
+        if (dto.getCode() != null && tenantPackageManager.existsByCode(dto.getCode())) {
             log.warn("租户套餐编码重复，编码: {}", dto.getCode());
             throw new TenantException(TenantExceptionEnum.TENANT_PACKAGE_CODE_DUPLICATE);
         }
-        if (!dto.getName().equals(tenantPackage.getName()) && tenantPackageManager.existsByName(dto.getName())) {
+        if (tenantPackageManager.existsByName(dto.getName())) {
             log.warn("租户套餐名称重复，名称: {}", dto.getName());
             throw new TenantException(TenantExceptionEnum.TENANT_PACKAGE_ALREADY_EXISTS);
         }
@@ -85,16 +79,10 @@ public class TenantPackageServiceImpl implements ITenantPackageService {
     @Transactional
     public void delete(Long id) {
         log.info("开始删除租户套餐，套餐ID: {}", id);
-        
-        TenantPackage tenantPackage = tenantPackageManager.getById(id);
-        if (tenantPackage == null) {
-            log.warn("租户套餐不存在，套餐ID: {}", id);
-            throw new TenantException(TenantExceptionEnum.TENANT_PACKAGE_NOT_FOUND);
-        }
-        
+
         tenantPackageManager.removeById(id);
         
-        log.info("租户套餐删除成功，套餐ID: {}, 套餐名称: {}", id, tenantPackage.getName());
+        log.info("租户套餐删除成功，套餐ID: {}", id);
     }
 
     @Override
@@ -115,7 +103,7 @@ public class TenantPackageServiceImpl implements ITenantPackageService {
     @Override
     public ResPage<TenantPackageVO> page(TenantPackageQuery query, ReqPage reqPage) {
         log.info("分页查询租户套餐列表，页码: {}, 每页大小: {}, 查询条件: {}", 
-                reqPage.getCurrentPage(), reqPage.getPageSize(), query);
+                reqPage.getPage(), reqPage.getSize(), query);
         
         LambdaQueryWrapper<TenantPackage> queryWrapper = Wrappers.<TenantPackage>lambdaQuery()
                 .like(null != query.getName(), TenantPackage::getName, query.getName())
@@ -125,7 +113,7 @@ public class TenantPackageServiceImpl implements ITenantPackageService {
                 .le(null != query.getCreateTimeEnd(), TenantPackage::getCreateTime, query.getCreateTimeEnd())
                 .orderByAsc(TenantPackage::getSort);
         
-        IPage<TenantPackage> page = tenantPackageManager.page(new Page<>(reqPage.getCurrentPage(), reqPage.getPageSize()), queryWrapper);
+        IPage<TenantPackage> page = tenantPackageManager.page(new Page<>(reqPage.getPage(), reqPage.getSize()), queryWrapper);
         ResPage<TenantPackageVO> result = ResPageConvert.convert(page, TenantPackageAssembler::assembler);
         
         log.debug("分页查询租户套餐列表成功，总记录数: {}, 当前页记录数: {}", result.getTotal(), result.getSize());
