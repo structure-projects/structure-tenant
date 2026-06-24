@@ -7,7 +7,7 @@
     <parent>
         <groupId>cn.structured</groupId>
         <artifactId>structure-dependencies</artifactId>
-        <version>1.4.0</version>
+        <version>1.4.2</version>
     </parent>
 
 
@@ -27,6 +27,8 @@
         <spring-alibaba.version>2025.1.0.0</spring-alibaba.version>
         <spring-cloud-parent.version>5.0.0</spring-cloud-parent.version>
         <testcontainers.version>1.20.6</testcontainers.version>
+        <structure-security.version>1.1.4</structure-security.version>
+        <structure-datascope.version>1.0.3</structure-datascope.version>
     </properties>
 
     <modules>
@@ -65,6 +67,28 @@
             </dependency>
 
             <dependency>
+                <groupId>cn.structured</groupId>
+                <artifactId>structure-security-oauth-resource-starter</artifactId>
+                <version>${structure-security.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.structured</groupId>
+                <artifactId>structure-security-permission-starter</artifactId>
+                <version>${structure-security.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>cn.structured</groupId>
+                <artifactId>structure-datascope-starter</artifactId>
+                <version>${structure-datascope.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.structured</groupId>
+                <artifactId>structure-datascope-mybatis-plus</artifactId>
+                <version>${structure-datascope.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies-parent</artifactId>
                 <version>${spring-cloud-parent.version}</version>
@@ -86,12 +110,6 @@
 
 
             <dependency>
-                <groupId>com.baomidou</groupId>
-                <artifactId>mybatis-plus-spring-boot4-starter</artifactId>
-                <version>${mybatis-plus.version}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>org.springdoc</groupId>
                 <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
                 <version>${springdoc.version}</version>
@@ -105,4 +123,16 @@
 
         </dependencies>
     </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring-boot.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 </project>

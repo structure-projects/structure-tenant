@@ -28,20 +28,17 @@ spring:
   config:
     import:
       - optional:nacos:${spring.application.name}?refreshEnabled=true
-
-
 management:
   endpoint:
     health:
       show-details: always
-
 ---
 spring:
   config:
     activate:
       on-profile: dev
-server:
-  port: 8082
+    import:
+      - optional:classpath:${spring.application.name}.yaml
 ---
 spring:
   config:
